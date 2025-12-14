@@ -1,64 +1,75 @@
 const puppeteer = require('puppeteer');
+const puppeteerExtra = require('puppeteer-extra');
+const puppeteerExtraPluginStealth = require('puppeteer-extra-plugin-stealth');
+
+puppeteerExtra.use(puppeteerExtraPluginStealth()); // 加载 Stealth 插件，帮助绕过 Cloudflare 验证
 
 (async () => {
-    const browser = await puppeteer.launch({
-        headless: true, // 无头模式
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    const browser = await puppeteerExtra.launch({
+        headless: false, // 设置为 false 以便查看浏览器操作
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
 
     const page = await browser.newPage();
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-    
-    const url = 'https://icmp9.com/user/dashboard'; // 确保这里是目标网站的正确 URL
-    console.log('访问的 URL:', url); // 打印访问的 URL 用于调试
-    await page.goto(url, { waitUntil: 'networkidle0' }); // 确保页面加载完成
 
+    const loginUrl = 'https://icmp9.com/user/dashboard'; // 登录页面 URL
+    const username = 'mrfrankjsw'; // 替换为你的用户名
+    const password = '17Shihui88!'; // 替换为你的密码
+
+    await page.goto(loginUrl, { waitUntil: 'networkidle0' });
+
+    // 检查是否需要 Cloudflare Turnstile 验证
     try {
-        // 等待 Cloudflare 验证框（如果存在）
-        await page.waitForSelector('#cf-clearance', { visible: true, timeout: 60000 });
-        console.log('Cloudflare 验证框出现，点击确认按钮');
+        await page.waitForSelector('#cf-clearance', { visible: true, timeout: 30000 });
+        console.log('检测到 Cloudflare 验证框，开始点击');
         
+        // 如果遇到 Turnstile 验证，模拟点击
         const checkbox = await page.$('#cf-clearance');
         if (checkbox) {
             await checkbox.click();
-            console.log('点击了确认按钮');
+            console.log('成功点击 Cloudflare 验证框');
         }
-        
-        // 等待页面重新加载
-        await page.waitForNavigation();
+
+        await page.waitForNavigation({ waitUntil: 'networkidle0' });
     } catch (error) {
-        console.log('未发现 Cloudflare 验证框，跳过');
+        console.log('未检测到 Cloudflare 验证框，跳过');
     }
 
-    // 增加一个确保页面完全加载的等待
-    await page.waitForFunction('document.readyState === "complete"', { timeout: 60000 });
+    // 等待并填充登录表单（根据页面实际情况）
+    await page.waitForSelector('input[name="username"]'); // 确保用户名输入框加载
+    await page.type('input[name="username"]', username); // 填写用户名
+    await page.type('input[name="password"]', password); // 填写密码
+    await page.click('button[type="submit"]'); // 提交登录表单
 
-    // 输出当前页面的 HTML 内容，用于调试
-    const html = await page.content();
-    console.log('当前页面 HTML:', html);  // 输出页面 HTML 进行检查
+    // 等待仪表盘页面加载完成
+    await page.waitForNavigation({ waitUntil: 'networkidle0' });
 
-    // 确保签到按钮存在
+    console.log('成功登录，页面加载完成');
+
+    // 等待签到按钮出现
     try {
         await page.waitForSelector('#checkin-btn', { visible: true, timeout: 60000 });
+        console.log('签到按钮已加载，开始点击');
+
         const checkinButton = await page.$('#checkin-btn');
         if (checkinButton) {
             await checkinButton.click();
-            console.log('点击了签到按钮');
+            console.log('成功点击签到按钮');
         } else {
-            console.log('未找到签到按钮！');
+            console.log('未找到签到按钮');
         }
     } catch (error) {
-        console.log('找不到签到按钮:', error);
+        console.log('未找到签到按钮:', error);
     }
 
-    // 等待并获取签到结果
+    // 输出签到结果
     try {
         await page.waitForSelector('#checkin-result', { visible: true, timeout: 60000 });
         const resultText = await page.$eval('#checkin-result', el => el.textContent);
-        console.log(`签到结果: ${resultText}`);
+        console.log('签到结果:', resultText);
     } catch (error) {
-        console.log('未找到签到结果元素，输出页面 HTML 进行调试：');
-        console.log(await page.content());  // 输出整个页面 HTML，帮助调试
+        console.log('未找到签到结果元素');
     }
 
     await browser.close();
