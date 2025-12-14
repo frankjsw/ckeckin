@@ -3,14 +3,14 @@ name: Auto Checkin
 on:
   push:
     branches:
-      - main  # 触发工作流的分支，通常是 `main` 或 `master`
+      - main  # 触发工作流的分支
   pull_request:
     branches:
       - main  # 也可以为 `pull_request` 设置
 
 jobs:
   install-and-run:
-    runs-on: ubuntu-latest  # 使用最新的 Ubuntu 作为 runner 环境
+    runs-on: ubuntu-latest  # 使用最新的 Ubuntu 环境
     
     steps:
     # 检出仓库代码
@@ -21,13 +21,13 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '16'  # 可以选择你需要的 Node.js 版本，16 是一个常见的选择
-    
+        node-version: '16'  # 使用 Node.js 16 版本
+
     # 安装项目依赖
     - name: Install dependencies
       run: |
-        npm install puppeteer-extra puppeteer-extra-plugin-stealth
-        npm install # 如果你的项目中还有其他依赖
+        npm install puppeteer puppeteer-extra puppeteer-extra-plugin-stealth  # 安装 puppeteer 和其他相关依赖
+        npm install # 如果你的项目中有 package.json，执行此命令安装所有依赖
     
     # 运行自动签到脚本
     - name: Run auto checkin script
