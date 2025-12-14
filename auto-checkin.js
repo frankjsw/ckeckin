@@ -9,9 +9,10 @@ const puppeteer = require('puppeteer');
     const page = await browser.newPage();
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
     
-    // 导航到页面并等待加载完成
-    await page.goto('https://example.com'); // 替换为目标网址
-    
+    const url = 'https://icmp9.com/user/dashboard'; // 确保这里是目标网站的正确 URL
+    console.log('访问的 URL:', url); // 打印访问的 URL 用于调试
+    await page.goto(url, { waitUntil: 'networkidle0' }); // 确保页面加载完成
+
     try {
         // 等待 Cloudflare 验证框（如果存在）
         await page.waitForSelector('#cf-clearance', { visible: true, timeout: 60000 });
@@ -36,14 +37,18 @@ const puppeteer = require('puppeteer');
     const html = await page.content();
     console.log('当前页面 HTML:', html);  // 输出页面 HTML 进行检查
 
-    // 等待并点击签到按钮
-    await page.waitForSelector('#checkin-btn', { visible: true, timeout: 60000 });
-    const checkinButton = await page.$('#checkin-btn');
-    if (checkinButton) {
-        await checkinButton.click();
-        console.log('点击了签到按钮');
-    } else {
-        console.log('未找到签到按钮！');
+    // 确保签到按钮存在
+    try {
+        await page.waitForSelector('#checkin-btn', { visible: true, timeout: 60000 });
+        const checkinButton = await page.$('#checkin-btn');
+        if (checkinButton) {
+            await checkinButton.click();
+            console.log('点击了签到按钮');
+        } else {
+            console.log('未找到签到按钮！');
+        }
+    } catch (error) {
+        console.log('找不到签到按钮:', error);
     }
 
     // 等待并获取签到结果
