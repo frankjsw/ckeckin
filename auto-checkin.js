@@ -7,15 +7,18 @@ puppeteer.use(puppeteerExtraPluginStealth());
 (async () => {
     const browser = await puppeteer.launch({
         headless: true, // 确保使用无头模式
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] // 可能需要这些参数以避免一些安全限制
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
 
     const page = await browser.newPage();
 
-    // 你的签到逻辑代码...
-    await page.goto('https://icmp9.com/user/dashboard');
+    // 跳转到签到页面
+    await page.goto('https://icmp9.com/user/dashboard', { waitUntil: 'domcontentloaded' });
 
-    // 继续你的脚本操作
+    // 等待 #checkin-btn 元素加载完成
+    await page.waitForSelector('#checkin-btn', { timeout: 60000 });  // 等待60秒
+
+    // 点击签到按钮
     await page.click('#checkin-btn');
 
     // 等待签到结果
