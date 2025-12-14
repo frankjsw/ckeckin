@@ -1,0 +1,29 @@
+name: Auto Check-in Script
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * *'  # 每天零点自动执行一次
+
+jobs:
+  auto-checkin:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: |
+          npm install puppeteer
+
+      - name: Run the auto check-in script
+        run: |
+          node ./auto-checkin.js
