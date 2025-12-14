@@ -23,12 +23,17 @@ jobs:
       with:
         node-version: '16'  # 使用 Node.js 16 版本
 
-    # 安装项目依赖
+    # 安装依赖
     - name: Install dependencies
       run: |
         npm install puppeteer puppeteer-extra puppeteer-extra-plugin-stealth  # 安装 puppeteer 和其他相关依赖
         npm install # 如果你的项目中有 package.json，执行此命令安装所有依赖
     
-    # 运行自动签到脚本
-    - name: Run auto checkin script
-      run: node ./auto-checkin.js
+    # 安装 xvfb (X virtual framebuffer)
+    - name: Install xvfb
+      run: sudo apt-get install -y xvfb
+    
+    # 使用 xvfb 运行自动签到脚本
+    - name: Run auto checkin script with xvfb
+      run: |
+        xvfb-run node ./auto-checkin.js
