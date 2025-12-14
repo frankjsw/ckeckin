@@ -1,29 +1,34 @@
-name: Auto Check-in Script
+name: Auto Checkin
 
 on:
   push:
     branches:
-      - main
-  schedule:
-    - cron: '0 0 * * *'  # 每天零点自动执行一次
+      - main  # 触发工作流的分支，通常是 `main` 或 `master`
+  pull_request:
+    branches:
+      - main  # 也可以为 `pull_request` 设置
 
 jobs:
-  auto-checkin:
-    runs-on: ubuntu-latest
-
+  install-and-run:
+    runs-on: ubuntu-latest  # 使用最新的 Ubuntu 作为 runner 环境
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install dependencies
-        run: |
-          npm install puppeteer
-
-      - name: Run the auto check-in script
-        run: |
-          node ./auto-checkin.js
+    # 检出仓库代码
+    - name: Checkout code
+      uses: actions/checkout@v2
+    
+    # 设置 Node.js 环境
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'  # 可以选择你需要的 Node.js 版本，16 是一个常见的选择
+    
+    # 安装项目依赖
+    - name: Install dependencies
+      run: |
+        npm install puppeteer-extra puppeteer-extra-plugin-stealth
+        npm install # 如果你的项目中还有其他依赖
+    
+    # 运行自动签到脚本
+    - name: Run auto checkin script
+      run: node ./auto-checkin.js
